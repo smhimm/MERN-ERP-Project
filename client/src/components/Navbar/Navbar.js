@@ -1,14 +1,39 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AppBar, Avatar, Button, Toolbar, Typography } from "@mui/material";
+import { useDispatch } from "react-redux";
+import decode from "jwt-decode";
 
 // import memories from "../../images/memories.png";
 import useStyles from "./styles";
 
 const Navbar = () => {
   const classes = useStyles();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("profile")));
+  const dispatch = useDispatch();
+  const negative = useNavigate();
+  const location = useLocation();
 
-  const user = null;
+  const logout = () => {
+    dispatch({ type: "LOGOUT" });
+    negative("/");
+    setUser(null);
+  };
+
+  useEffect(() => {
+    const token = user?.token;
+
+    if (token) {
+      const decodedToken = decode(token);
+
+      if (decodedToken.exp * 1000 < new Date().getTime()) {
+        logout();
+      }
+    }
+
+    setUser(JSON.parse(localStorage.getItem("profile")));
+  }, [location]);
+
   return (
     <AppBar className={classes.AppBar} position="static" color="inherit">
       <div className={classes.brandContainer}>
@@ -16,10 +41,10 @@ const Navbar = () => {
           component={Link}
           to="/"
           className={classes.heading}
-          variant="h2"
+          variant="h3"
           align="center"
         >
-          Memories
+          ERP-PROJECT
         </Typography>
         {/*<img
       className={classes.image}
@@ -46,6 +71,7 @@ const Navbar = () => {
               variant="contained"
               className={classes.logout}
               color="secondary"
+              onClick={logout}
             >
               Logout
             </Button>
